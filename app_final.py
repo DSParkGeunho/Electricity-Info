@@ -12,7 +12,7 @@ import os
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 # from webdriver_manager.core.os_manager import ChromeType
-from webdriver_manager.utils import ChromeType
+# from webdriver_manager.utils import ChromeType
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -101,9 +101,11 @@ def fetch_realtime_data():
     # options.add_argument("--disable-gpu")
     # options.add_argument("--headless")
     # driver = get_driver()
+
+
     try:
         # Setup the ChromeDriver using webdriver_manager
-        chrome_service = Service(ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install())
+        chrome_service = Service(ChromeDriverManager().install())
         options = Options()
         options.add_argument("--headless")  # Run in headless mode
         options.add_argument("--no-sandbox")
