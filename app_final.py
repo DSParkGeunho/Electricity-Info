@@ -1,25 +1,13 @@
 import streamlit as st
 import pandas as pd
-import logging
 import plotly.express as px
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
 import pandas as pd
-import time
-import os
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-# from webdriver_manager.core.os_manager import ChromeType
-# from webdriver_manager.utils import ChromeType
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 def load_smp_demand_data():
-    file_path = '2024 SMP(5-22까지).xlsx'
+    file_path = '2024 SMP 육지.xlsx'
     df_SMP = pd.read_excel(file_path)
     new_file_path = '전력수요예측.xlsx'
     df_Demand = pd.read_excel(new_file_path)
@@ -81,121 +69,11 @@ def load_smp_count_data():
     return df_SMPCount
 
 
-# @st.cache_resource
-# def get_driver():
-#     return webdriver.Chrome(
-#         service=Service(ChromeDriverManager().install()),
-#         options=options
-#     )
-
-
-def fetch_realtime_data():
-    # Initialize the webdriver
-    # chromedriver_path = os.path.join(os.getcwd(), 'chromedriver')
-    # chrome_service = Service(chromedriver_path)
-    # driver = webdriver.Chrome(service=chrome_service)
-
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\google-chrome"
-
-    chrome_service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=chrome_service)
-
-    # Open the webpage
-    url = "https://epsis.kpx.or.kr/epsisnew/selectEkgeEpsMepRealChart.do?menuId=030300"
-    driver.get(url)
-        
-    # Maximize the window
-    driver.maximize_window()
-        
-    # Scroll to the bottom of the page to load initial data
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(5)
-        
-    # Initialize an empty DataFrame to store all data elements
-    df = pd.DataFrame(columns=['temporary', 'supply capacity', 'current load', 'supply reserve capacity', 'supply reserve rate'])
-        
-    # Find the scrollbar element
-    scrollbar = driver.find_element(By.CLASS_NAME, 'rMateH5__VBrowserScrollBar')
-        
-    scroll_count = 0
-    max_scrolls = 24  # Set a maximum number of scrolls to prevent infinite loop
-        
-    while True:
-        # Get the initial number of elements
-        initial_size = len(df)
-
-        # Get the page source and parse it
-        page_source = driver.page_source
-        soup = BeautifulSoup(page_source, 'html.parser')
-            
-        # Find elements containing the data
-        elements = soup.find_all(class_=lambda c: c and c.startswith('rMateH5__DataGridItemRenderer rMateH5__DataGridColumn'))
-            
-        # Extract text from elements and add to a temporary list if not null
-        new_elements = [element.text for element in elements if element.text.strip()]
-            
-        # Get the initial scrollbar position
-        initial_scroll_position = driver.execute_script("return arguments[0].scrollTop;", scrollbar)
-            
-        # Scroll the scrollbar down a small amount
-        driver.execute_script("arguments[0].scrollTop += 580;", scrollbar)
-        time.sleep(2)
-            
-        # Get the new scrollbar position
-        new_scroll_position = driver.execute_script("return arguments[0].scrollTop;", scrollbar)
-
-        for element in new_elements:
-            print(element)
-            
-        # Split the data into respective categories and append to the DataFrame
-        if new_elements:
-            num_entries = len(new_elements)
-            num_iter = num_entries // 5 * 4   
-
-            supply_capacity = []
-            current_load = []
-            supply_reserve_capacity = []
-            supply_reserve_rate = []
-                
-                
-            for i in range(0,num_iter,4):
-                supply_capacity.append(new_elements[i])
-                current_load.append(new_elements[i+1])
-                supply_reserve_capacity.append(new_elements[i+2])
-                supply_reserve_rate.append(new_elements[i+3])
-                
-            timestamps = new_elements[num_iter:num_entries]
-                    
-                
-                
-            temp_df = pd.DataFrame({
-                '시간': timestamps,
-                '공급능력': supply_capacity,
-                '현재부하': current_load,
-                '공급예비력': supply_reserve_capacity,
-                '공급예비율': supply_reserve_rate
-            })
-                
-            df = pd.concat([df, temp_df], ignore_index=True)
-            
-        # Check if scrollbar position did not change
-        if initial_scroll_position == new_scroll_position:
-            break
-            
-        # Increment scroll counter and check if max scrolls reached
-        scroll_count += 1
-        if scroll_count >= max_scrolls:
-            print("Reached maximum scroll limit.")
-            break
-        
-        # Close the webdriver
-    driver.quit()
-
-            # Print the DataFrame
-    df = df.drop_duplicates()
-    df = df.sort_values(by = 'temporary')
-    return df
+def load_today_data():
+    file_path_today = 'today.xlsx'
+    df_today = pd.read_excel(file_path_today)
+    df_today['temporary'] = pd.to_datetime(df_today['temporary'], format='%Y-%m-%d %H:%M')
+    return df_today
     
 
 st.title("Electricity trading Dashboard")
@@ -351,16 +229,16 @@ elif view_option == "SMP Count Data":
         st.plotly_chart(fig)
 
 else:
-    df_Announcement = fetch_realtime_data()
+    df_Announcement = load_today_data()
     
     # Plot today's announcement data
     st.subheader("Today's Announcement")
     
     columns_to_plot = {
-        '공급능력': 'Supply Capacity (MW)',
-        '현재부하': 'Current Load (MW)',
-        '공급예비력': 'Supply Reserve Capacity (MW)',
-        '공급예비율': 'Supply Reserve Rate (%)'
+        'supply capacity': 'supply_capacity',
+        'current load': 'current_load',
+        'supply reserve capacity': 'supply_reserve_capacity',
+        'supply reserve rate': 'supply_reserve_rate'
     }
     
     for column, title in columns_to_plot.items():
