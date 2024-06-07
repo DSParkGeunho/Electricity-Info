@@ -91,9 +91,11 @@ def get_driver():
 
 def fetch_realtime_data():
     # Initialize the webdriver
-    chromedriver_path = os.path.join(os.getcwd(), 'chromedriver')
-    chrome_service = Service(chromedriver_path)
-    driver = webdriver.Chrome(service=chrome_service)
+    # chromedriver_path = os.path.join(os.getcwd(), 'chromedriver')
+    # chrome_service = Service(chromedriver_path)
+    # driver = webdriver.Chrome(service=chrome_service)
+
+    driver = webdriver.Chrome(ChromeDriverManager().install())
 
     # Open the webpage
     url = "https://epsis.kpx.or.kr/epsisnew/selectEkgeEpsMepRealChart.do?menuId=030300"
