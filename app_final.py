@@ -85,7 +85,7 @@ def load_smp_count_data():
 def get_driver():
     return webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
-        options=options,
+        options=options
     )
 
 
