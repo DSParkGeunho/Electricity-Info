@@ -4,10 +4,10 @@ import plotly.express as px
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
+import os
 
 def load_smp_demand_data():
     file_path = '2024 SMP(5-22까지).xlsx'
@@ -73,7 +73,8 @@ def load_smp_count_data():
 
 def fetch_realtime_data():
     # Initialize the webdriver
-    chrome_service = Service(ChromeDriverManager().install())
+    chromedriver_path = os.path.join(os.getcwd(), 'chromedriver')
+    chrome_service = Service(chromedriver_path)
     driver = webdriver.Chrome(service=chrome_service)
    
     # Open the webpage
