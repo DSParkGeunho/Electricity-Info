@@ -81,12 +81,12 @@ def load_smp_count_data():
     return df_SMPCount
 
 
-@st.cache_resource
-def get_driver():
-    return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=options
-    )
+# @st.cache_resource
+# def get_driver():
+#     return webdriver.Chrome(
+#         service=Service(ChromeDriverManager().install()),
+#         options=options
+#     )
 
 
 def fetch_realtime_data():
@@ -95,7 +95,8 @@ def fetch_realtime_data():
     # chrome_service = Service(chromedriver_path)
     # driver = webdriver.Chrome(service=chrome_service)
 
-    driver = webdriver.Chrome(ChromeDriverManager().install())
+    chrome_service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=chrome_service)
 
     # Open the webpage
     url = "https://epsis.kpx.or.kr/epsisnew/selectEkgeEpsMepRealChart.do?menuId=030300"
