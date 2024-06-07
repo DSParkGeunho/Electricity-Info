@@ -81,6 +81,13 @@ def load_smp_count_data():
     return df_SMPCount
 
 
+@st.cache_resource
+def get_driver():
+    return webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=options,
+    )
+
 
 def fetch_realtime_data():
     # Initialize the webdriver
@@ -88,144 +95,124 @@ def fetch_realtime_data():
     # chrome_service = Service(chromedriver_path)
     # driver = webdriver.Chrome(service=chrome_service)
    
-    # @st.cache_resource
-    # def get_driver():
-    #     return webdriver.Chrome(
-    #         service=Service(
-    #             ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
-    #         ),
-    #         options=options,
-    #     )
+    
 
-    # options = Options()
-    # options.add_argument("--disable-gpu")
-    # options.add_argument("--headless")
-    # driver = get_driver()
+    options = Options()
+    options.add_argument("--disable-gpu")
+    options.add_argument("--headless")
+    driver = get_driver()
 
 
-    try:
-        # Setup the ChromeDriver using webdriver_manager
-        chrome_service = Service(ChromeDriverManager().install())
-        options = Options()
-        options.add_argument("--headless")  # Run in headless mode
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")  # Disables GPU hardware acceleration
-        options.add_argument("--window-size=1920x1080")  # Set window size for headless mode
+    # try:
+    #     # Setup the ChromeDriver using webdriver_manager
+    #     chrome_service = Service(ChromeDriverManager().install())
+    #     options = Options()
+    #     options.add_argument("--headless")  # Run in headless mode
+    #     options.add_argument("--no-sandbox")
+    #     options.add_argument("--disable-dev-shm-usage")
+    #     options.add_argument("--disable-gpu")  # Disables GPU hardware acceleration
+    #     options.add_argument("--window-size=1920x1080")  # Set window size for headless mode
         
-        driver = webdriver.Chrome(service=chrome_service, options=options)
+    #     driver = webdriver.Chrome(service=chrome_service, options=options)
 
 
 
-        # Open the webpage
-        url = "https://epsis.kpx.or.kr/epsisnew/selectEkgeEpsMepRealChart.do?menuId=030300"
-        driver.get(url)
+    # Open the webpage
+    url = "https://epsis.kpx.or.kr/epsisnew/selectEkgeEpsMepRealChart.do?menuId=030300"
+    driver.get(url)
         
-        # Maximize the window
-        driver.maximize_window()
+    # Maximize the window
+    driver.maximize_window()
         
-        # Scroll to the bottom of the page to load initial data
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(5)
+    # Scroll to the bottom of the page to load initial data
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(5)
         
-        # Initialize an empty DataFrame to store all data elements
-        df = pd.DataFrame(columns=['temporary', 'supply capacity', 'current load', 'supply reserve capacity', 'supply reserve rate'])
+    # Initialize an empty DataFrame to store all data elements
+    df = pd.DataFrame(columns=['temporary', 'supply capacity', 'current load', 'supply reserve capacity', 'supply reserve rate'])
         
-        # Find the scrollbar element
-        scrollbar = driver.find_element(By.CLASS_NAME, 'rMateH5__VBrowserScrollBar')
+    # Find the scrollbar element
+    scrollbar = driver.find_element(By.CLASS_NAME, 'rMateH5__VBrowserScrollBar')
         
-        scroll_count = 0
-        max_scrolls = 24  # Set a maximum number of scrolls to prevent infinite loop
+    scroll_count = 0
+    max_scrolls = 24  # Set a maximum number of scrolls to prevent infinite loop
         
-        while True:
-            # Get the initial number of elements
-            initial_size = len(df)
+    while True:
+        # Get the initial number of elements
+        initial_size = len(df)
 
-            # Get the page source and parse it
-            page_source = driver.page_source
-            soup = BeautifulSoup(page_source, 'html.parser')
+        # Get the page source and parse it
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
             
-            # Find elements containing the data
-            elements = soup.find_all(class_=lambda c: c and c.startswith('rMateH5__DataGridItemRenderer rMateH5__DataGridColumn'))
+        # Find elements containing the data
+        elements = soup.find_all(class_=lambda c: c and c.startswith('rMateH5__DataGridItemRenderer rMateH5__DataGridColumn'))
             
-            # Extract text from elements and add to a temporary list if not null
-            new_elements = [element.text for element in elements if element.text.strip()]
+        # Extract text from elements and add to a temporary list if not null
+        new_elements = [element.text for element in elements if element.text.strip()]
             
-            # Get the initial scrollbar position
-            initial_scroll_position = driver.execute_script("return arguments[0].scrollTop;", scrollbar)
+        # Get the initial scrollbar position
+        initial_scroll_position = driver.execute_script("return arguments[0].scrollTop;", scrollbar)
             
-            # Scroll the scrollbar down a small amount
-            driver.execute_script("arguments[0].scrollTop += 580;", scrollbar)
-            time.sleep(2)
+        # Scroll the scrollbar down a small amount
+        driver.execute_script("arguments[0].scrollTop += 580;", scrollbar)
+        time.sleep(2)
             
-            # Get the new scrollbar position
-            new_scroll_position = driver.execute_script("return arguments[0].scrollTop;", scrollbar)
+        # Get the new scrollbar position
+        new_scroll_position = driver.execute_script("return arguments[0].scrollTop;", scrollbar)
 
-            for element in new_elements:
-                print(element)
+        for element in new_elements:
+            print(element)
             
-            # Split the data into respective categories and append to the DataFrame
-            if new_elements:
-                num_entries = len(new_elements)
-                num_iter = num_entries // 5 * 4   
+        # Split the data into respective categories and append to the DataFrame
+        if new_elements:
+            num_entries = len(new_elements)
+            num_iter = num_entries // 5 * 4   
 
-                supply_capacity = []
-                current_load = []
-                supply_reserve_capacity = []
-                supply_reserve_rate = []
+            supply_capacity = []
+            current_load = []
+            supply_reserve_capacity = []
+            supply_reserve_rate = []
                 
                 
-                for i in range(0,num_iter,4):
-                    supply_capacity.append(new_elements[i])
-                    current_load.append(new_elements[i+1])
-                    supply_reserve_capacity.append(new_elements[i+2])
-                    supply_reserve_rate.append(new_elements[i+3])
+            for i in range(0,num_iter,4):
+                supply_capacity.append(new_elements[i])
+                current_load.append(new_elements[i+1])
+                supply_reserve_capacity.append(new_elements[i+2])
+                supply_reserve_rate.append(new_elements[i+3])
                 
-                timestamps = new_elements[num_iter:num_entries]
+            timestamps = new_elements[num_iter:num_entries]
                     
                 
                 
-                temp_df = pd.DataFrame({
-                    '시간': timestamps,
-                    '공급능력': supply_capacity,
-                    '현재부하': current_load,
-                    '공급예비력': supply_reserve_capacity,
-                    '공급예비율': supply_reserve_rate
-                })
+            temp_df = pd.DataFrame({
+                '시간': timestamps,
+                '공급능력': supply_capacity,
+                '현재부하': current_load,
+                '공급예비력': supply_reserve_capacity,
+                '공급예비율': supply_reserve_rate
+            })
                 
-                df = pd.concat([df, temp_df], ignore_index=True)
+            df = pd.concat([df, temp_df], ignore_index=True)
             
-            # Check if scrollbar position did not change
-            if initial_scroll_position == new_scroll_position:
-                break
+        # Check if scrollbar position did not change
+        if initial_scroll_position == new_scroll_position:
+            break
             
-            # Increment scroll counter and check if max scrolls reached
-            scroll_count += 1
-            if scroll_count >= max_scrolls:
-                print("Reached maximum scroll limit.")
-                break
+        # Increment scroll counter and check if max scrolls reached
+        scroll_count += 1
+        if scroll_count >= max_scrolls:
+            print("Reached maximum scroll limit.")
+            break
         
         # Close the webdriver
-        driver.quit()
+    driver.quit()
 
             # Print the DataFrame
-        df = df.drop_duplicates()
-        df = df.sort_values(by = 'temporary')
-        return df
-    
-    except Exception as e:
-        logger.error("Error occurred in fetch_realtime_data: %s", str(e))
-        raise
-
-    if __name__ == "__main__":
-        try:
-            df = fetch_realtime_data()
-        except Exception as e:
-            logger.error("Failed to fetch realtime data: %s", str(e))
-
-
-
+    df = df.drop_duplicates()
+    df = df.sort_values(by = 'temporary')
     return df
+    
 
 st.title("Electricity trading Dashboard")
 view_option = st.radio(
