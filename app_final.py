@@ -91,31 +91,9 @@ def get_driver():
 
 def fetch_realtime_data():
     # Initialize the webdriver
-    # chromedriver_path = os.path.join(os.getcwd(), 'chromedriver.exe')
-    # chrome_service = Service(chromedriver_path)
-    # driver = webdriver.Chrome(service=chrome_service)
-   
-    
-
-    options = Options()
-    options.add_argument("--disable-gpu")
-    options.add_argument("--headless")
-    driver = get_driver()
-
-
-    # try:
-    #     # Setup the ChromeDriver using webdriver_manager
-    #     chrome_service = Service(ChromeDriverManager().install())
-    #     options = Options()
-    #     options.add_argument("--headless")  # Run in headless mode
-    #     options.add_argument("--no-sandbox")
-    #     options.add_argument("--disable-dev-shm-usage")
-    #     options.add_argument("--disable-gpu")  # Disables GPU hardware acceleration
-    #     options.add_argument("--window-size=1920x1080")  # Set window size for headless mode
-        
-    #     driver = webdriver.Chrome(service=chrome_service, options=options)
-
-
+    chromedriver_path = os.path.join(os.getcwd(), 'chromedriver.exe')
+    chrome_service = Service(chromedriver_path)
+    driver = webdriver.Chrome(service=chrome_service)
 
     # Open the webpage
     url = "https://epsis.kpx.or.kr/epsisnew/selectEkgeEpsMepRealChart.do?menuId=030300"
