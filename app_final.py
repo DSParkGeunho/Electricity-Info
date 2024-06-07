@@ -95,6 +95,9 @@ def fetch_realtime_data():
     # chrome_service = Service(chromedriver_path)
     # driver = webdriver.Chrome(service=chrome_service)
 
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\google-chrome"
+
     chrome_service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=chrome_service)
 
