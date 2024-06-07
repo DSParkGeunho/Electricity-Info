@@ -4,6 +4,7 @@ import plotly.express as px
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
@@ -72,7 +73,7 @@ def load_smp_count_data():
 
 def fetch_realtime_data():
     # Initialize the webdriver
-    chrome_service = Service(r'C:\Users\user\chromedriver-win64\chromedriver.exe')
+    chrome_service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=chrome_service)
    
     # Open the webpage
