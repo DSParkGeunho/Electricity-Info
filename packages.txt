@@ -2,7 +2,6 @@ libnss3
 libgconf-2-4
 libxss1
 libappindicator1
-libindicator7
 libxrandr2
 libatk1.0-0
 libgtk-3-0
