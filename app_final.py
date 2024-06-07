@@ -8,6 +8,12 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import time
 import os
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.os_manager import ChromeType
+
+
 
 def load_smp_demand_data():
     file_path = '2024 SMP(5-22까지).xlsx'
@@ -71,12 +77,29 @@ def load_smp_count_data():
     df_SMPCount['기간'] = df_SMPCount['기간'].dt.strftime('%Y-%m')
     return df_SMPCount
 
+
+
 def fetch_realtime_data():
     # Initialize the webdriver
-    chromedriver_path = os.path.join(os.getcwd(), 'chromedriver.exe')
-    chrome_service = Service(chromedriver_path)
-    driver = webdriver.Chrome(service=chrome_service)
+    # chromedriver_path = os.path.join(os.getcwd(), 'chromedriver.exe')
+    # chrome_service = Service(chromedriver_path)
+    # driver = webdriver.Chrome(service=chrome_service)
    
+    @st.cache_resource
+    def get_driver():
+        return webdriver.Chrome(
+            service=Service(
+                ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+            ),
+            options=options,
+        )
+
+    options = Options()
+    options.add_argument("--disable-gpu")
+    options.add_argument("--headless")
+
+    driver = get_driver()
+
     # Open the webpage
     url = "https://epsis.kpx.or.kr/epsisnew/selectEkgeEpsMepRealChart.do?menuId=030300"
     driver.get(url)
