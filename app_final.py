@@ -110,6 +110,8 @@ def fetch_realtime_data():
         options.add_argument("--headless")  # Run in headless mode
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")  # Disables GPU hardware acceleration
+        options.add_argument("--window-size=1920x1080")  # Set window size for headless mode
         
         driver = webdriver.Chrome(service=chrome_service, options=options)
 
